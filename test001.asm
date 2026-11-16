@@ -106,7 +106,6 @@ clear:
  pop af
  pop af
  pop af
- pop af
  pop iy
  pop ix
  pop hl
