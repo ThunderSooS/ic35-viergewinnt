@@ -1,4 +1,4 @@
-name: Build native IC35 TEST 001
+name: Build native IC35 apps
 on:
   push:
     branches: [main]
@@ -6,19 +6,32 @@ on:
 permissions:
   contents: read
 jobs:
-  native-test-001:
+  native-apps:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - name: Test emitted Z80 subset and APP layout
+      - name: Test baseline, game, AI and bridge
         run: python3 -m unittest discover -s tests -v
-      - name: Build native TEST001.APP
+      - name: Build unchanged TEST001.APP
         run: python3 tools/build_test.py
-      - name: Upload native APP and identification
+      - name: Upload baseline test APP
         uses: actions/upload-artifact@v4
         with:
           name: IC35-TEST-001-NATIVE-APP
           path: build/IC35-TEST-001/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Install open-source Z80 compiler
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends sdcc
+      - name: Build native VIER.APP against AI
+        run: python3 tools/build_game.py
+      - name: Upload native AI game APP and diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: IC35-VIER-KI-001-NATIVE-APP
+          path: build/IC35-VIER-KI-001/
           if-no-files-found: error
           retention-days: 30

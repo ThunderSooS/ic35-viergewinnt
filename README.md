@@ -1,15 +1,24 @@
-# IC35 TEST 001
+# Native IC35 bring-up and Vier Gewinnt
 
-Fresh native IC35 bring-up: text, hexadecimal key codes, and Q/q to return to the organizer. No game, graphics board, sound, animation or BASIC runtime.
+## Confirmed baseline
 
-## Build
+TEST001.APP (source 2329688) was confirmed working by the user on the IC35. Its assembly source, builder and tests remain unchanged. It displays key codes and exits with Q/q. Keep the working binary separately.
 
-Run `python3 -m unittest discover -s tests -v`, then `python3 tools/build_test.py`. No downloads, compiler packages, SDK binaries or apilib.obj are used. The deliberately restricted assembler accepts only the instructions needed by test001.asm.
+## New stage: VIER KI 001
 
-One workflow creates `IC35-TEST-001-NATIVE-APP`, containing TEST001.APP, BUILD-INFO.json and START.txt. Copy only TEST001.APP to IC35/APP/TEST001.APP, without replacing existing apps.
+Native VIER.APP: human X versus automatic AI O, text board, columns 1-7, N to restart, Q to exit. AI first takes an immediate win, otherwise blocks one, otherwise prefers the center. No sound, animation, bitmap board or BASIC runtime.
 
-## Status and limits
+Game state is a 44-byte stack-local structure, plus normal call frames; no global game RAM or RAM-bank switch. The C-to-firmware bridge preserves general register pairs, except the returned HL key value. This bridge adapts the tested assembly approach, but the linked C game is NOT yet device verified.
 
-EXPERIMENTAL, NOT DEVICE VERIFIED. Back up organizer data and card contents before a device test. Stop on rejection or a hang; do not repeatedly restart it. Expected: IC35 TEST 001, Q: Ende, VOR GETKEY, KEY HEX and initial digits 0000. Keys update the digits; Q/q exits. VOR GETKEY is only a phase label, not proof that firmware keyboard code has been entered.
+## One workflow, two distinct artifacts
 
-Host tests execute the emitted instruction subset with destructive firmware mocks. They do not emulate IC35 firmware, interrupts, loader or display. Firmware addresses and word-stack arguments, and the previously observed 68-byte APP header/five-bank layout, still need device verification. No global RAM or RAM-bank switch is used.
+- IC35-TEST-001-NATIVE-APP: unchanged baseline.
+- IC35-VIER-KI-001-NATIVE-APP: new VIER.APP plus build identification and linker/assembly diagnostics.
+
+Back up organizer data and card contents. Copy the game to IC35/APP/VIER.APP without replacing TEST001.APP. Expected game header: VIER KI 001. Stop on a hang; do not repeatedly restart.
+
+## Build and limitations
+
+Run python3 -m unittest discover -s tests -v. Build the baseline with python3 tools/build_test.py. The game additionally needs the open-source SDCC package: python3 tools/build_game.py. No proprietary SDK binaries or apilib.obj are uploaded or used.
+
+Host tests cover game logic, AI, UI mocks, the bridge stack model and HEX validation. They do not execute IC35 firmware or validate the complete linked Z80 game. Device compatibility is not implied by a green build. APP packaging follows the observed header/five-bank layout from the baseline.
