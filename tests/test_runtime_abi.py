@@ -25,8 +25,8 @@ class RuntimeAbiTests(unittest.TestCase):
         source = (ROOT/'native/game.c').read_text()
         self.assertIn('#define CALL0 __sdcccall(0)', source)
         declarations = [line for line in source.splitlines() if line.endswith(' CALL0;')]
-        self.assertEqual(len(declarations), 4)
-        for name in ['fw_clear', 'fw_text', 'fw_char', 'fw_key']:
+        self.assertEqual(len(declarations), 5)
+        for name in ['fw_clear', 'fw_text', 'fw_char', 'fw_key', 'fw_poll']:
             self.assertTrue(any(name+'(' in line for line in declarations))
 
 if __name__ == '__main__':

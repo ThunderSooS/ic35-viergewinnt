@@ -2,7 +2,8 @@
 #include <string.h>
 #include "../native/game.c"
 static const char *input="11q";
-static int reads,clears;
+static int reads,clears,polls,poll_after;
+static unsigned short poll_key;
 static unsigned char board[6][7];
 static char status[32],shown_level[16];
 void fw_clear(void) {++clears;memset(board,0,sizeof(board));}
@@ -24,7 +25,13 @@ void fw_char(unsigned short ch,short x,short y)
 }
 unsigned short fw_key(void)
 {assert(reads<(int)strlen(input));return (unsigned char)input[reads++];}
-
+unsigned short fw_poll(void)
+{
+    unsigned short key;
+    ++polls;
+    if(poll_key&&polls>=poll_after) {key=poll_key;poll_key=0;return key;}
+    return 0;
+}
 static int threats(Game *g,int side)
 {
     int c,r,n;
@@ -37,12 +44,10 @@ static int threats(Game *g,int side)
     }
     return n;
 }
-
 int main(void)
 {
     Game g,saved;
-    Search s;
-    int d,dr,dc,i,c,r,side,tries,games,moves,level,mirror,p;
+    int d,dr,dc,i,c,r,side,tries,games,moves,level,mirror,p,n;
     unsigned long seed;
     init(&g);saved=g;assert(choose(&g)==3);assert(!memcmp(&g,&saved,sizeof(g)));
     assert(drop(&g,-1,1)==-1&&drop(&g,7,1)==-1);
@@ -84,22 +89,26 @@ int main(void)
         init(&g);
         assert(drop(&g,3,1)>=0);assert(drop(&g,choose_level(&g,level),2)>=0);
         assert(drop(&g,mirror?4:2,1)>=0);assert(drop(&g,choose_level(&g,level),2)>=0);
-        assert(drop(&g,mirror?2:4,1)>=0);
-        assert(threats(&g,1)<2);
+        assert(drop(&g,mirror?2:4,1)>=0);assert(threats(&g,1)<2);
         if(!g.result) assert(drop(&g,choose_level(&g,level),2)>=0);
         if(!g.result) assert(drop(&g,mirror?1:5,1)>=0);
         assert(g.result!=1);
     }
-    init(&g);saved=g;s.nodes=0;s.limit=1;s.aborted=0;s.root_depth=6;s.best=3;
-    search(&g,6,2,-16000,16000,&s);
-    assert(s.aborted&&s.nodes==1&&!memcmp(&g,&saved,sizeof(g)));
+    for(level=2;level<=3;++level) {
+        init(&g);assert(drop(&g,3,1)>=0);assert(drop(&g,3,2)>=0);assert(drop(&g,2,1)>=0);
+        saved=g;poll_key=0;polls=0;choose_level(&g,level);n=polls;
+        for(p=0;p<3;++p) for(i=1;i<=n;++i) {
+            poll_key=(unsigned short)(p==0?'Q':p==1?'N':'S');poll_after=i;polls=0;
+            assert(choose_level(&g,level)==-2-p);
+            assert(!poll_key&&!memcmp(&g,&saved,sizeof(g)));
+        }
+    }
     seed=19;
-    for(level=1;level<=3;++level) for(games=0;games<(level==1?300:12);++games) {
+    for(level=1;level<=3;++level) for(games=0;games<(level==1?300:50);++games) {
         init(&g);side=1;
         for(moves=0;moves<42&&!g.result;++moves) {
-            if(side==2) {
-                saved=g;c=choose_level(&g,level);assert(!memcmp(&g,&saved,sizeof(g)));
-            } else {
+            if(side==2) {saved=g;c=choose_level(&g,level);assert(!memcmp(&g,&saved,sizeof(g)));}
+            else {
                 seed=seed*1664525UL+1013904223UL;c=(int)((seed>>16)%7);tries=0;
                 while(g.cell[0][c]&&tries<7){c=(c+1)%7;++tries;}
                 assert(tries<7);
@@ -122,5 +131,9 @@ int main(void)
     assert(board[5][2]=='X'&&board[5][3]=='X'&&board[5][4]=='X'&&board[5][5]=='X');
     input="14356NQ";reads=0;game_main();assert(!strcmp(status,"Dein Zug: X"));
     for(r=0;r<6;++r) for(c=0;c<7;++c) assert(board[r][c]=='.');
+    input="24";reads=0;polls=0;poll_after=1;poll_key='Q';game_main();assert(reads==2);
+    input="24Q";reads=0;polls=0;poll_key='N';game_main();assert(!strcmp(status,"Dein Zug: X"));
+    for(r=0;r<6;++r) for(c=0;c<7;++c) assert(board[r][c]=='.');
+    input="241Q";reads=0;polls=0;poll_key='S';game_main();assert(!strcmp(shown_level,"Leicht"));
     return 0;
 }
