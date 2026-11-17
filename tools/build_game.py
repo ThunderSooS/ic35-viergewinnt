@@ -8,7 +8,7 @@ from build_test import package
 
 ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT / 'build' / 'game-work'
-OUT = ROOT / 'build' / 'IC35-VIER-KI-002'
+OUT = ROOT / 'build' / 'IC35-VIER-KI-003'
 SAVE = ['push af','push bc','push de','push hl','push ix','push iy']
 RESTORE = ['pop iy','pop ix','pop hl','pop de','pop bc','pop af','ret']
 
@@ -98,27 +98,39 @@ def main():
     bank,used=read_image((WORK/'game.ihx').read_text())
     if not bank.startswith(bytes.fromhex('f5c5d5e5dde5fde5')):
         raise ValueError('Missing entry register preservation')
-    app=bytearray(package(bank)); app[14:44]=b'VIER KI 002'.ljust(30,b'\0')
+    app=bytearray(package(bank)); app[14:44]=b'VIER KI 003'.ljust(30,b'\0')
     (OUT/'VIER.APP').write_bytes(app)
     (OUT/'BUILD-INFO.json').write_text(json.dumps({
-        'version':'VIER KI 002','status':'NOT_DEVICE_VERIFIED',
+        'version':'VIER KI 003','status':'NOT_DEVICE_VERIFIED',
         'commit':os.environ.get('GITHUB_SHA','local'),
         'bytes':len(app),'sha256':hashlib.sha256(app).hexdigest(),
         'source_sha256':hashlib.sha256((ROOT/'native/game.c').read_bytes()).hexdigest(),
-        'linked_bytes':used,'state':'stack-local Game; no RAM bank switch',
+        'linked_bytes':used,'state':'stack-local Game and Search; no RAM bank switch',
         'c_abi':'sdcccall(1); register ABI matching the SDCC runtime',
         'firmware_abi':'explicit sdcccall(0) declarations; stack parameters, HL result',
         'firmware_bridge':'all general register pairs preserved; GetKey returns HL',
+        'ai':{'easy':'VIER KI 002 immediate win/block, otherwise center',
+              'medium':{'max_depth':4,'node_budget':800},
+              'hard':{'max_depth':6,'node_budget':2400},
+              'search':'alpha-beta; cumulative per-move budget; last completed depth'},
         'limitations':['Host tests do not execute IC35 firmware.',
-                       'C stack usage and linked Z80 game require device verification.']
+                       'AI think time and recursive stack use require device verification.']
     },indent=2)+'\n')
     (OUT/'START.txt').write_text(
-        'VIER KI 002 - EXPERIMENTAL NATIVE APP, NOT BASIC\n'
-        'Keep the working TEST001.APP and back up organizer data and card contents.\n'
+        'VIER KI 003 - EXPERIMENTAL NATIVE APP, NOT BASIC\n'
+        'Keep TEST001.APP and a backup of your working VIER KI 002.\n'
+        'Back up organizer data and card contents before a device test.\n'
         'Copy VIER.APP to IC35/APP/VIER.APP; do not replace TEST001.APP.\n'
-        'You are X, AI is O. 1-7: column. N: restart. Q: exit.\n'
-        'AI: win immediately, otherwise block an immediate win, otherwise prefer center.\n'
-        'No sound, animation or graphical board. Header: VIER KI 002.\n'
+        'Start menu: 1 Easy, 2 Medium, 3 Hard. Enter keeps selection (initially Medium).\n'
+        'You are X, AI is O. During play 1-7 selects a column.\n'
+        'N: new game, same level. S: level menu, then new game. Q: exit, also in menu.\n'
+        'Level is shown on screen and is not saved after exiting the app.\n'
+        'Easy uses the old AI. Medium/Hard use bounded iterative alpha-beta search.\n'
+        'Depth limits: Medium 4, Hard 6 plies; cumulative node budgets 800/2400.\n'
+        'The last completed depth is used; maximum depth is not guaranteed.\n'
+        'Q is handled after the current AI search, not during it.\n'
+        'No sound, animation or graphical board. Header: VIER KI 003.\n'
+        'Device speed and recursive stack use are not yet verified.\n'
         'Stop on a hang; do not repeatedly restart. Host tests are not firmware tests.\n',encoding='ascii')
     for name in ['game.map','game.ihx','game.asm','entry.s','bridge.s']:
         (OUT/name).write_bytes((WORK/name).read_bytes())
