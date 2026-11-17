@@ -1,4 +1,4 @@
-/* VIER KI 001: stack-local state; firmware calls preserve general registers. */
+/* VIER KI 002: C uses the SDCC runtime ABI; firmware calls explicitly use CALL0. */
 #ifdef __SDCC
 #define CALL0 __sdcccall(0)
 #else
@@ -88,7 +88,7 @@ static void draw(const Game *g,const char *message)
     int r,c;
     unsigned short ch;
     fw_clear();
-    fw_text("VIER KI 001",4,4);
+    fw_text("VIER KI 002",4,4);
     for(c=0;c<7;++c) fw_char((unsigned short)('1'+c),(short)(6+28*c),22);
     for(r=0;r<6;++r) {
         for(c=0;c<7;++c) {
