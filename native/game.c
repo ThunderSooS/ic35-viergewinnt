@@ -1,4 +1,4 @@
-/* VIER KI 004: nonrecursive tactics, multiplication-free wins, polled input. */
+/* VIER KI 005: arrow selection; Down, Enter or Space drops a stone. */
 #ifdef __SDCC
 #define CALL0 __sdcccall(0)
 #else
@@ -189,34 +189,59 @@ static const char *level_name(int level)
     return "Mittel";
 }
 
+/* Arrow values measured with TEST001.APP on the IC35. */
+#define KEY_LEFT  0x0001
+#define KEY_RIGHT 0x0002
+#define KEY_UP    0x0003
+#define KEY_DOWN  0x0004
+
+static int move_selection(int selected,unsigned short key)
+{
+    if(key==KEY_LEFT&&selected>0) --selected;
+    if(key==KEY_RIGHT&&selected<6) ++selected;
+    return selected;
+}
+
+static int drop_key(unsigned short key)
+{
+    return key==KEY_DOWN||key==13||key==10||key==' ';
+}
+
 static int select_level(int previous)
 {
     unsigned short key;
+    int selected;
+    selected=previous;
     for(;;) {
         fw_clear();
-        fw_text("VIER KI 004",4,4);
+        fw_text("VIER KI 005",4,4);
         fw_text("Schwierigkeit",4,28);
-        fw_text("1 Leicht",4,52);
-        fw_text("2 Mittel",4,72);
-        fw_text("3 Schwer",4,92);
-        fw_text("Bisher:",4,116);
-        fw_text(level_name(previous),76,116);
-        fw_text("1-3 Wahl Enter OK Q Ende",4,144);
+        fw_text("1 Leicht",22,52);
+        fw_text("2 Mittel",22,72);
+        fw_text("3 Schwer",22,92);
+        fw_text(">",4,(short)(52+20*(selected-1)));
+        fw_text("Spiel: <> Ab/Enter/Leer",4,116);
+        fw_text("Auf/Ab Enter Start Q Ende",4,144);
         key=fw_key();
         if(key=='q'||key=='Q') return 0;
         if(key>='1'&&key<='3') return (int)(key-'0');
-        if(key==13||key==10) return previous;
+        if(key==13||key==10) return selected;
+        if(key==KEY_UP&&selected>1) --selected;
+        if(key==KEY_DOWN&&selected<3) ++selected;
     }
 }
 
-static void draw(const Game *g,const char *message,int level)
+static void draw(const Game *g,const char *message,int level,int selected)
 {
     int r,c;
     unsigned short ch;
     fw_clear();
-    fw_text("VIER KI 004",4,4);
+    fw_text("VIER KI 005",4,4);
     fw_text(level_name(level),116,4);
-    for(c=0;c<7;++c) fw_char((unsigned short)('1'+c),(short)(6+28*c),22);
+    for(c=0;c<7;++c) {
+        ch=(unsigned short)(c==selected?'v':'1'+c);
+        fw_char(ch,(short)(6+28*c),22);
+    }
     for(r=0;r<6;++r) {
         for(c=0;c<7;++c) {
             ch='.';
@@ -236,29 +261,34 @@ void game_main(void)
 {
     Game g;
     unsigned short key;
-    int col,level;
+    int col,level,selected;
     const char *message;
     level=select_level(2);
     if(!level) return;
-    init(&g); message="Dein Zug: X";
+    init(&g);selected=3;message="Dein Zug: X";
     for(;;) {
-        draw(&g,message,level);
+        draw(&g,message,level,selected);
         key=fw_key();
         if(key=='q'||key=='Q') return;
         if(key=='s'||key=='S') {
             level=select_level(level);
             if(!level) return;
-            init(&g);message="Dein Zug: X";continue;
+            init(&g);selected=3;message="Dein Zug: X";continue;
         }
-        if(key=='n'||key=='N') {init(&g);message="Dein Zug: X";continue;}
-        if(g.result||key<'1'||key>'7') continue;
-        if(drop(&g,(int)(key-'1'),1)<0) {message="Spalte voll";continue;}
+        if(key=='n'||key=='N') {init(&g);selected=3;message="Dein Zug: X";continue;}
+        if(g.result) continue;
+        if(key==KEY_LEFT||key==KEY_RIGHT) {
+            selected=move_selection(selected,key);message="Dein Zug: X";continue;
+        }
+        if(key>='1'&&key<='7') selected=(int)(key-'1');
+        else if(!drop_key(key)) continue;
+        if(drop(&g,selected,1)<0) {message="Spalte voll";continue;}
         if(!g.result) {
-            draw(&g,"KI denkt: O",level);
+            draw(&g,"KI denkt: O",level,selected);
             col=choose_level(&g,level);
             if(col==-2) return;
             if(col==-4) {level=select_level(level);if(!level) return;}
-            if(col==-3||col==-4) {init(&g);message="Dein Zug: X";continue;}
+            if(col==-3||col==-4) {init(&g);selected=3;message="Dein Zug: X";continue;}
             if(col>=0) drop(&g,col,2);
         }
         message="Dein Zug: X";

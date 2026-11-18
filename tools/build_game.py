@@ -8,7 +8,7 @@ from build_test import package
 
 ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT / 'build' / 'game-work'
-OUT = ROOT / 'build' / 'IC35-VIER-KI-004'
+OUT = ROOT / 'build' / 'IC35-VIER-KI-005'
 SAVE = ['push af','push bc','push de','push hl','push ix','push iy']
 RESTORE = ['pop iy','pop ix','pop hl','pop de','pop bc','pop af','ret']
 
@@ -104,10 +104,10 @@ def main():
     bank,used=read_image((WORK/'game.ihx').read_text())
     if not bank.startswith(bytes.fromhex('f5c5d5e5dde5fde5')):
         raise ValueError('Missing entry register preservation')
-    app=bytearray(package(bank)); app[14:44]=b'VIER KI 004'.ljust(30,b'\0')
+    app=bytearray(package(bank)); app[14:44]=b'VIER KI 005'.ljust(30,b'\0')
     (OUT/'VIER.APP').write_bytes(app)
     (OUT/'BUILD-INFO.json').write_text(json.dumps({
-        'version':'VIER KI 004','status':'NOT_DEVICE_VERIFIED',
+        'version':'VIER KI 005','status':'NOT_DEVICE_VERIFIED',
         'commit':os.environ.get('GITHUB_SHA','local'),
         'bytes':len(app),'sha256':hashlib.sha256(app).hexdigest(),
         'source_sha256':hashlib.sha256((ROOT/'native/game.c').read_bytes()).hexdigest(),
@@ -116,6 +116,9 @@ def main():
         'firmware_abi':'explicit sdcccall(0) declarations; stack parameters, HL result',
         'firmware_bridge':'general register pairs preserved; GetKey/ScanKey return HL',
         'poll_address':'0x3c6d; checked against supplied API symbol metadata',
+        'controls':{'left':1,'right':2,'up':3,'down':4,'enter':[13,10],'space':32,
+                    'arrows_source':'TEST001.APP device measurement supplied by user',
+                    'drop':'Down/Enter/Space; 1-7 direct drop also supported'},
         'ai':{'easy':'immediate win/block, otherwise center',
               'medium':'avoid immediate loss and next-reply double threats',
               'hard':'medium plus own winning threats and connected stones',
@@ -125,17 +128,18 @@ def main():
                        'Target speed and ScanKey bridge require device verification.']
     },indent=2)+'\n')
     (OUT/'START.txt').write_text(
-        'VIER KI 004 - EXPERIMENTAL NATIVE APP, NOT BASIC\n'
-        'Keep TEST001.APP and a backup of working VIER KI 002.\n'
+        'VIER KI 005 - EXPERIMENTAL NATIVE APP, NOT BASIC\n'
+        'Keep TEST001.APP and a backup of working VIER KI 004.\n'
         'Back up organizer data and card contents before a device test.\n'
         'Copy VIER.APP to IC35/APP/VIER.APP; do not replace TEST001.APP.\n'
-        'Menu: 1 Easy, 2 Medium, 3 Hard. Enter keeps selection (initially Medium).\n'
-        'Play: 1-7 column. N new game. S level menu, then new game. Q exit.\n'
+        'Menu: Up/Down selects level, Enter starts. 1-3 direct selection also works.\n'
+        'Play: Left/Right selects column. Down, Enter or Space drops one stone.\n'
+        '1-7 still drops directly. N new game. S level menu. Q exit.\n'
         'Medium/Hard poll Q/N/S during calculation; other thinking-time keys are discarded.\n'
         'A digit at the right of the status line marks the candidate being processed.\n'
         'Medium avoids immediate losses and double threats. Hard adds offensive scoring.\n'
         'No recursion or full-board window evaluation. Difficulty is not saved on exit.\n'
-        'Native speed and the new ScanKey bridge still require device verification.\n'
+        'Version 005 controls and target build still require device verification.\n'
         'Stop on a hang; do not repeatedly restart. Host tests are not firmware tests.\n',encoding='ascii')
     for name in ['game.map','game.ihx','game.asm','entry.s','bridge.s']:
         (OUT/name).write_bytes((WORK/name).read_bytes())
