@@ -8,7 +8,7 @@ from build_test import package
 
 ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT / 'build' / 'game-work'
-OUT = ROOT / 'build' / 'IC35-VIER-KI-005'
+OUT = ROOT / 'build' / 'IC35-VIER-KI-006'
 SAVE = ['push af','push bc','push de','push hl','push ix','push iy']
 RESTORE = ['pop iy','pop ix','pop hl','pop de','pop bc','pop af','ret']
 
@@ -28,7 +28,12 @@ def bridge_source():
                 lines+=['ld l,'+str(offset)+'(ix)','ld h,'+str(offset+1)+'(ix)','push hl']
             lines+=['ld hl,#1','push hl']; words=4
         lines+=['call '+address]+['pop af']*words+RESTORE
-    # Addresses checked against the supplied API symbol metadata, not linked SDK code.
+    lines+=['_fw_fill::']+SAVE+['ld ix,#0','add ix,sp']
+    for index in [4,3,2,1,0]:
+        offset=14+2*index
+        lines+=['ld l,'+str(offset)+'(ix)','ld h,'+str(offset+1)+'(ix)','push hl']
+    lines+=['call 0x3799']+['pop af']*5+RESTORE
+    # Existing GetKey/ScanKey bridges remain unchanged.
     for name,address in [('fw_key','0x3bec'),('fw_poll','0x3c6d')]:
         lines+=['_'+name+'::','push af','push bc','push de','push ix','push iy',
                 'call '+address,'pop iy','pop ix','pop de','pop bc','pop af','ret']
@@ -91,9 +96,11 @@ def main():
         '-c',ROOT/'native/game.c','-o',WORK/'game.rel')
     native_asm=(WORK/'game.asm').read_text()
     if re.search(r'\bcall\s+__mulint\b',native_asm):
-        raise ValueError('Unexpected runtime multiplication in tactical AI')
+        raise ValueError('Unexpected runtime multiplication')
     if '_search:' in native_asm or '_evaluate:' in native_asm:
         raise ValueError('Old recursive search is still present')
+    if '_gfx_draw:' not in native_asm or not re.search(r'\b(?:call|jp)\s+_gfx_draw\b',native_asm):
+        raise ValueError('Graphics renderer is not integrated into the target code')
     run('sdcc','-mz80','--sdcccall','1','--no-std-crt0',
         '--code-loc','0x4200','--data-loc','0x8000','-Wl-m',
         WORK/'entry.rel',WORK/'bridge.rel',WORK/'game.rel','-o',WORK/'game.ihx')
@@ -104,43 +111,33 @@ def main():
     bank,used=read_image((WORK/'game.ihx').read_text())
     if not bank.startswith(bytes.fromhex('f5c5d5e5dde5fde5')):
         raise ValueError('Missing entry register preservation')
-    app=bytearray(package(bank)); app[14:44]=b'VIER KI 005'.ljust(30,b'\0')
+    app=bytearray(package(bank)); app[14:44]=b'VIER KI 006'.ljust(30,b'\0')
     (OUT/'VIER.APP').write_bytes(app)
     (OUT/'BUILD-INFO.json').write_text(json.dumps({
-        'version':'VIER KI 005','status':'NOT_DEVICE_VERIFIED',
+        'version':'VIER KI 006','status':'NOT_DEVICE_VERIFIED',
         'commit':os.environ.get('GITHUB_SHA','local'),
         'bytes':len(app),'sha256':hashlib.sha256(app).hexdigest(),
         'source_sha256':hashlib.sha256((ROOT/'native/game.c').read_bytes()).hexdigest(),
-        'linked_bytes':used,'state':'stack-local Game; nonrecursive AI; no RAM bank switch',
+        'graphics_sha256':hashlib.sha256((ROOT/'native/graphics.h').read_bytes()).hexdigest(),
+        'linked_bytes':used,'state':'stack-local Game and GfxView; no framebuffer or RAM bank switch',
+        'renderer':'graphics.h called from game_main and level menu; dirty cell/arrow/status updates',
         'c_abi':'sdcccall(1); register ABI matching the SDCC runtime',
-        'firmware_abi':'explicit sdcccall(0) declarations; stack parameters, HL result',
-        'firmware_bridge':'general register pairs preserved; GetKey/ScanKey return HL',
-        'poll_address':'0x3c6d; checked against supplied API symbol metadata',
-        'controls':{'left':1,'right':2,'up':3,'down':4,'enter':[13,10],'space':32,
-                    'arrows_source':'TEST001.APP device measurement supplied by user',
-                    'drop':'Down/Enter/Space; 1-7 direct drop also supported'},
-        'ai':{'easy':'immediate win/block, otherwise center',
-              'medium':'avoid immediate loss and next-reply double threats',
-              'hard':'medium plus own winning threats and connected stones',
-              'bounds':'at most 7 candidates and 49 human replies; no recursive search',
-              'input':'Q/N/S polled between tactical probes; progress per candidate'},
+        'firmware_abi':'explicit CALL0; FillBlock at 0x3799 with five stack arguments',
+        'firmware_bridge':'general registers preserved; GetKey/ScanKey return HL',
+        'controls':{'left':1,'right':2,'up':3,'down':4,'enter':[13,10],'space':32},
+        'ai':'unchanged nonrecursive tactics from VIER KI 005',
         'limitations':['Host tests do not execute IC35 firmware.',
-                       'Target speed and ScanKey bridge require device verification.']
+                       'Target speed, font metrics, stack and graphics bridge require device verification.']
     },indent=2)+'\n')
     (OUT/'START.txt').write_text(
-        'VIER KI 005 - EXPERIMENTAL NATIVE APP, NOT BASIC\n'
-        'Keep TEST001.APP and a backup of working VIER KI 004.\n'
-        'Back up organizer data and card contents before a device test.\n'
+        'VIER KI 006 - EXPERIMENTAL NATIVE GRAPHICS APP\n'
+        'Keep TEST001.APP, working VIER KI 005 and a backup of organizer/card data.\n'
         'Copy VIER.APP to IC35/APP/VIER.APP; do not replace TEST001.APP.\n'
-        'Menu: Up/Down selects level, Enter starts. 1-3 direct selection also works.\n'
-        'Play: Left/Right selects column. Down, Enter or Space drops one stone.\n'
-        '1-7 still drops directly. N new game. S level menu. Q exit.\n'
-        'Medium/Hard poll Q/N/S during calculation; other thinking-time keys are discarded.\n'
-        'A digit at the right of the status line marks the candidate being processed.\n'
-        'Medium avoids immediate losses and double threats. Hard adds offensive scoring.\n'
-        'No recursion or full-board window evaluation. Difficulty is not saved on exit.\n'
-        'Version 005 controls and target build still require device verification.\n'
-        'Stop on a hang; do not repeatedly restart. Host tests are not firmware tests.\n',encoding='ascii')
+        'Expected: graphical board, black human stones, AI rings, selection triangle.\n'
+        'Menu: Up/Down, Enter (or 1-3). Play: Left/Right, Down/Enter/Space (or 1-7).\n'
+        'N new game. S level menu. Q exit, also polled while Medium/Hard thinks.\n'
+        'Four winning cells are framed. Remis means draw. No animation or sound.\n'
+        'Font, speed, stack and bridge need device verification. Stop on a hang.\n',encoding='ascii')
     for name in ['game.map','game.ihx','game.asm','entry.s','bridge.s']:
         (OUT/name).write_bytes((WORK/name).read_bytes())
     (OUT/'compiler-version.txt').write_text(subprocess.check_output(['sdcc','--version'],text=True))

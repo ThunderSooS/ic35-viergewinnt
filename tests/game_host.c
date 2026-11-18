@@ -4,32 +4,14 @@
 static const char *input="11q";
 static int reads,clears,polls,poll_after;
 static unsigned short poll_key;
-static unsigned char board[6][7];
-static char status[32],shown_level[16];
-void fw_clear(void) {++clears;memset(board,0,sizeof(board));}
-void fw_text(const char *s,short x,short y)
-{
-    assert(s&&x>=0&&x<239&&y>=0&&y+16<=160);
-    if(y==128) {assert(strlen(s)<sizeof(status));strcpy(status,s);}
-    if(y==4&&x==116) {assert(strlen(s)<sizeof(shown_level));strcpy(shown_level,s);}
-}
-void fw_char(unsigned short ch,short x,short y)
-{
-    int r,c;
-    assert(x>=0&&x+16<=239&&y>=0&&y+16<=160);
-    if(y>=40&&y<=110) {
-        r=(y-40)/14;c=(x-6)/28;
-        assert(r>=0&&r<6&&c>=0&&c<7);
-        board[r][c]=(unsigned char)ch;
-    }
-}
+#include "pixel_mock.h"
 unsigned short fw_key(void)
-{assert(reads<(int)strlen(input));return (unsigned char)input[reads++];}
+{screen_decode();assert(reads<(int)strlen(input));return (unsigned char)input[reads++];}
 unsigned short fw_poll(void)
 {
     unsigned short key;
     ++polls;
-    if(poll_key&&polls>=poll_after) {key=poll_key;poll_key=0;return key;}
+    if(poll_key&&polls>=poll_after) {key=poll_key;poll_key=0;screen_decode();return key;}
     return 0;
 }
 static int threats(Game *g,int side)
@@ -119,7 +101,7 @@ int main(void)
         assert(g.result>=1&&g.result<=3);
     }
     input="11q";reads=0;clears=0;game_main();
-    assert(reads==3&&clears==4&&board[5][0]=='X'&&board[5][3]=='O');
+    assert(reads==3&&clears==2&&board[5][0]=='X'&&board[5][3]=='O');
     input="11Nq";reads=0;game_main();
     for(r=0;r<6;++r) for(c=0;c<7;++c) assert(board[r][c]=='.');
     input="xQ";reads=0;game_main();assert(reads==2);

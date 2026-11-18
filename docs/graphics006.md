@@ -1,35 +1,17 @@
-# VIER KI 006 graphics component (staged)
+# VIER KI 006: integrated graphics
 
-This commit adds a tested renderer, not a new device APP. The active game,
-firmware bridge, AI, controls, TEST001 and build/artifact version remain 005.
-Do not treat the existing 005 artifact as a graphics build.
+The active game now includes graphics.h and calls gfx_draw() and gfx_menu().
+The five-word CALL0 fw_fill bridge uses the existing FillBlock API at 0x3799.
+AI, game rules and arrow/Enter/Space controls remain unchanged.
 
-## Renderer contract
+Build artifact: IC35-VIER-KI-006-NATIVE-APP, containing VIER.APP.
+The build checks for an actual renderer call and hashes game.c and graphics.h.
+Game/control tests now read pixels, not the old text layout. The host-only
+framebuffer in tests/pixel_mock.h is not compiled into the native APP.
 
-Include native/graphics.h after the Game definition, CALL0 firmware declarations
-and level_name(). Provide fw_fill(color,x,y,width,height) with the explicit CALL0
-ABI. It must use the existing FillBlock firmware API with preserved registers;
-no private SDK object is to be linked or uploaded.
+GfxView lives on the stack. It is invalidated after menus; normal moves and
+selection changes update only dirty regions. Status strings are immutable.
+No SDK binary, external image, animation or sound is added.
 
-Keep one GfxView on the application stack. Call gfx_reset() before its first use
-and after a menu or other operation overwrites the screen. Pass valid levels
-1..3 and selected columns 0..6 to gfx_draw(). The Game is never modified.
-
-The board uses x=8..134, y=28..136, 18-pixel cells. The selected column has a
-triangle above it. Human stones are black, AI stones have a white center, empty
-cells have a small dot. Four winning cells get inset square outlines. The side
-panel shows difficulty, turn/result and a legend; a draw is shown as Remis.
-The footer and all drawing rectangles stay inside 239 by 160 pixels.
-
-gfx_draw() caches cells, win masks, selection and status, not a framebuffer.
-Unchanged frames do not draw. Selection changes only redraw the arrow band;
-a stone change repaints its cell. gfx_menu(selected,previous) updates only the
-selection frame when previous is nonzero. Use previous=0 for a full menu draw.
-
-## Before device release
-
-Integrate the renderer into game_main and the menu, add and test the fw_fill
-bridge, adapt existing screen mocks to pixels, and bump the build to 006.
-Run the complete suite and inspect the actual SDCC/Z80 output and stack usage.
-Speed, real font metrics and flicker are not yet verified on the IC35.
-Keep the device-confirmed 005 build as fallback. No animation or sound is added.
+Keep working VIER KI 005 and TEST001.APP. GitHub build success and actual IC35
+font metrics, speed, stack use and flicker remain unverified until tested.

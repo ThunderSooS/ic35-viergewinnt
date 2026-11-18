@@ -1,4 +1,4 @@
-/* VIER KI 005: arrow selection; Down, Enter or Space drops a stone. */
+/* VIER KI 006: integrated monochrome graphics; AI and controls unchanged. */
 #ifdef __SDCC
 #define CALL0 __sdcccall(0)
 #else
@@ -207,21 +207,15 @@ static int drop_key(unsigned short key)
     return key==KEY_DOWN||key==13||key==10||key==' ';
 }
 
+#include "graphics.h"
+
 static int select_level(int previous)
 {
     unsigned short key;
-    int selected;
-    selected=previous;
+    int selected,last;
+    selected=previous;last=0;
     for(;;) {
-        fw_clear();
-        fw_text("VIER KI 005",4,4);
-        fw_text("Schwierigkeit",4,28);
-        fw_text("1 Leicht",22,52);
-        fw_text("2 Mittel",22,72);
-        fw_text("3 Schwer",22,92);
-        fw_text(">",4,(short)(52+20*(selected-1)));
-        fw_text("Spiel: <> Ab/Enter/Leer",4,116);
-        fw_text("Auf/Ab Enter Start Q Ende",4,144);
+        gfx_menu(selected,last);last=selected;
         key=fw_key();
         if(key=='q'||key=='Q') return 0;
         if(key>='1'&&key<='3') return (int)(key-'0');
@@ -231,49 +225,24 @@ static int select_level(int previous)
     }
 }
 
-static void draw(const Game *g,const char *message,int level,int selected)
-{
-    int r,c;
-    unsigned short ch;
-    fw_clear();
-    fw_text("VIER KI 005",4,4);
-    fw_text(level_name(level),116,4);
-    for(c=0;c<7;++c) {
-        ch=(unsigned short)(c==selected?'v':'1'+c);
-        fw_char(ch,(short)(6+28*c),22);
-    }
-    for(r=0;r<6;++r) {
-        for(c=0;c<7;++c) {
-            ch='.';
-            if(g->cell[r][c]==1) ch='X';
-            if(g->cell[r][c]==2) ch='O';
-            fw_char(ch,(short)(6+28*c),(short)(40+14*r));
-        }
-    }
-    if(g->result==1) message="Du gewinnst";
-    else if(g->result==2) message="KI gewinnt";
-    else if(g->result==3) message="Unentschieden";
-    fw_text(message,4,128);
-    fw_text("N Neu S Stufe Q Ende",4,144);
-}
-
 void game_main(void)
 {
     Game g;
+    GfxView view;
     unsigned short key;
     int col,level,selected;
     const char *message;
     level=select_level(2);
     if(!level) return;
-    init(&g);selected=3;message="Dein Zug: X";
+    init(&g);gfx_reset(&view);selected=3;message="Dein Zug: X";
     for(;;) {
-        draw(&g,message,level,selected);
+        gfx_draw(&g,message,level,selected,&view);
         key=fw_key();
         if(key=='q'||key=='Q') return;
         if(key=='s'||key=='S') {
             level=select_level(level);
             if(!level) return;
-            init(&g);selected=3;message="Dein Zug: X";continue;
+            init(&g);gfx_reset(&view);selected=3;message="Dein Zug: X";continue;
         }
         if(key=='n'||key=='N') {init(&g);selected=3;message="Dein Zug: X";continue;}
         if(g.result) continue;
@@ -284,10 +253,10 @@ void game_main(void)
         else if(!drop_key(key)) continue;
         if(drop(&g,selected,1)<0) {message="Spalte voll";continue;}
         if(!g.result) {
-            draw(&g,"KI denkt: O",level,selected);
+            gfx_draw(&g,"KI denkt: O",level,selected,&view);
             col=choose_level(&g,level);
             if(col==-2) return;
-            if(col==-4) {level=select_level(level);if(!level) return;}
+            if(col==-4) {level=select_level(level);if(!level) return;gfx_reset(&view);}
             if(col==-3||col==-4) {init(&g);selected=3;message="Dein Zug: X";continue;}
             if(col>=0) drop(&g,col,2);
         }
