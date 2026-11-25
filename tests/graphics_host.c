@@ -30,22 +30,22 @@ static int pieces(int side,int r,int c)
 int main(void)
 {
     Game g,before;GfxView v;
-    int r,c,i,d,dr,dc,a,b,old_fills,old_texts,old_clears;
+    unsigned char dir;int r,c,i,d,dr,dc,a,b,old_fills,old_texts,old_clears;
     unsigned char mask[6];
     memset(&g,0,sizeof(g));before=g;gfx_reset(&v);
-    gfx_draw(&g,"Dein Zug: X",2,3,&v);
+    gfx_draw(&g,"Dein Zug",2,3,&v);
     assert(!memcmp(&g,&before,sizeof(g))&&clears==1);
     for(r=0;r<6;++r)for(c=0;c<7;++c)assert(pieces(0,r,c));
     old_fills=fills;old_texts=texts;
-    gfx_draw(&g,"Dein Zug: X",2,3,&v);assert(fills==old_fills&&texts==old_texts&&clears==1);
+    gfx_draw(&g,"Dein Zug",2,3,&v);assert(fills==old_fills&&texts==old_texts&&clears==1);
     memcpy(saved,pixels,sizeof(saved));
-    for(c=0;c<7;++c) {gfx_draw(&g,"Dein Zug: X",2,c,&v);same_board();}
+    for(c=0;c<7;++c) {gfx_draw(&g,"Dein Zug",2,c,&v);same_board();}
     assert(clears==1);
     old_fills=fills;g.cell[5][2]=1;g.moves=1;
-    gfx_draw(&g,"Dein Zug: X",2,6,&v);assert(fills-old_fills==14&&pieces(1,5,2));
+    gfx_draw(&g,"Dein Zug",2,6,&v);assert(fills-old_fills==17&&pieces(1,5,2));
     old_fills=fills;g.cell[5][3]=2;g.moves=2;
-    gfx_draw(&g,"Dein Zug: X",2,6,&v);assert(fills-old_fills==23&&pieces(2,5,3));
-    gfx_draw(&g,"KI denkt: O",2,6,&v);assert(clears==1);
+    gfx_draw(&g,"Dein Zug",2,6,&v);assert(fills-old_fills==25&&pieces(2,5,3));
+    gfx_draw(&g,"KI denkt",2,6,&v);assert(clears==1);
     for(d=0;d<4;++d) {
         dr=0;dc=1;if(d==1){dr=1;dc=0;}if(d==2){dr=1;dc=1;}if(d==3){dr=1;dc=-1;}
         for(r=0;r<6;++r)for(c=0;c<7;++c) {
@@ -53,10 +53,10 @@ int main(void)
             for(a=1;a<=2;++a) {
                 memset(&g,0,sizeof(g));g.result=(unsigned char)a;
                 for(i=0;i<4;++i)g.cell[r+i*dr][c+i*dc]=(unsigned char)a;
-                before=g;gfx_win(&g,mask);b=0;
+                before=g;gfx_win(&g,mask,&dir);b=0;
                 for(i=0;i<4;++i)assert(mask[r+i*dr]&(1<<(c+i*dc)));
                 for(i=0;i<6;++i){int j;for(j=0;j<7;++j)if(mask[i]&(1<<j))++b;}
-                assert(b==4);gfx_reset(&v);gfx_draw(&g,"Dein Zug: X",3,3,&v);
+                assert(b==4&&dir==(d==3?3:d));gfx_reset(&v);gfx_draw(&g,"Dein Zug",3,3,&v);
                 for(i=0;i<4;++i)assert(pixels[29+18*(r+i*dr)][9+18*(c+i*dc)]);
                 assert(!memcmp(&g,&before,sizeof(g)));
             }

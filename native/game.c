@@ -1,4 +1,4 @@
-/* VIER KI 006: integrated monochrome graphics; AI and controls unchanged. */
+/* VIER KI 007: integrated monochrome graphics; AI and controls unchanged. */
 #ifdef __SDCC
 #define CALL0 __sdcccall(0)
 #else
@@ -234,7 +234,7 @@ void game_main(void)
     const char *message;
     level=select_level(2);
     if(!level) return;
-    init(&g);gfx_reset(&view);selected=3;message="Dein Zug: X";
+    init(&g);gfx_reset(&view);selected=3;message="Dein Zug";
     for(;;) {
         gfx_draw(&g,message,level,selected,&view);
         key=fw_key();
@@ -242,24 +242,24 @@ void game_main(void)
         if(key=='s'||key=='S') {
             level=select_level(level);
             if(!level) return;
-            init(&g);gfx_reset(&view);selected=3;message="Dein Zug: X";continue;
+            init(&g);gfx_reset(&view);selected=3;message="Dein Zug";continue;
         }
-        if(key=='n'||key=='N') {init(&g);selected=3;message="Dein Zug: X";continue;}
+        if(key=='n'||key=='N') {init(&g);selected=3;message="Dein Zug";continue;}
         if(g.result) continue;
         if(key==KEY_LEFT||key==KEY_RIGHT) {
-            selected=move_selection(selected,key);message="Dein Zug: X";continue;
+            selected=move_selection(selected,key);message="Dein Zug";continue;
         }
         if(key>='1'&&key<='7') selected=(int)(key-'1');
         else if(!drop_key(key)) continue;
         if(drop(&g,selected,1)<0) {message="Spalte voll";continue;}
         if(!g.result) {
-            gfx_draw(&g,"KI denkt: O",level,selected,&view);
+            gfx_draw(&g,"KI denkt",level,selected,&view);
             col=choose_level(&g,level);
             if(col==-2) return;
             if(col==-4) {level=select_level(level);if(!level) return;gfx_reset(&view);}
-            if(col==-3||col==-4) {init(&g);selected=3;message="Dein Zug: X";continue;}
+            if(col==-3||col==-4) {init(&g);selected=3;message="Dein Zug";continue;}
             if(col>=0) drop(&g,col,2);
         }
-        message="Dein Zug: X";
+        message="Dein Zug";
     }
 }
