@@ -26,10 +26,10 @@ class PollBridgeTests(unittest.TestCase):
             expected+=['ld l,'+str(offset)+'(ix)','ld h,'+str(offset+1)+'(ix)','push hl']
         expected+=['call 0x3799']+['pop af']*5+['pop iy','pop ix','pop hl','pop de','pop bc','pop af','ret']
         self.assertEqual(body,expected)
-        self.assertIn('short h) CALL0;',(ROOT/'native/graphics.h').read_text())
+        self.assertIn('short h) CALL0;',(ROOT/'src/graphics.h').read_text())
 
     def test_old_search_removed(self):
-        text=(ROOT/'native/game.c').read_text()
+        text=(ROOT/'src/game.c').read_text()
         self.assertNotIn('static int search(',text)
         self.assertNotIn('static int evaluate(',text)
         self.assertIn('key=fw_poll();',text)

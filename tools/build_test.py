@@ -84,7 +84,7 @@ def main():
                        'Host simulation does not execute IC35 firmware.']
     }, indent=2) + '\n')
     (OUT / 'START.txt').write_text(
-        'IC35 TEST 001 - EXPERIMENTAL NATIVE KEYBOARD TEST\n'
+        'IC35 TEST 001 - EXPERIMENTAL KEYBOARD TEST\n'
         'Back up organizer data and card contents before any device test.\n'
         'Copy TEST001.APP to IC35/APP/TEST001.APP. Do not overwrite another APP.\n'
         'Expected: IC35 TEST 001, Q: Ende, VOR GETKEY and initial code 0000.\n'

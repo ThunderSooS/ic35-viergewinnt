@@ -10,7 +10,7 @@ void fw_text(const char *s,short x,short y)
 {assert(s&&x>=0&&y>=0&&y+16<=160&&x+8*(int)strlen(s)<=239);++texts;}
 static const char *level_name(int level)
 {return level==1?"Leicht":level==3?"Schwer":"Mittel";}
-#include "../native/graphics.h"
+#include "../src/graphics.h"
 void fw_fill(unsigned short color,short x,short y,short w,short h)
 {
     int xx,yy;

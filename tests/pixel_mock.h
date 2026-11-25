@@ -1,6 +1,6 @@
 #ifndef IC35_PIXEL_MOCK_H
 #define IC35_PIXEL_MOCK_H
-/* Host-only framebuffer. The native APP does not allocate this memory. */
+/* Host-only framebuffer. The APP does not allocate this memory. */
 static unsigned char screen[160][239],board[6][7],header[7];
 static char status[32],shown_level[16];
 static int ai_frames;

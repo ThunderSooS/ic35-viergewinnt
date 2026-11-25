@@ -22,7 +22,7 @@ class RuntimeAbiTests(unittest.TestCase):
         self.assertEqual(len(calls), 2)
 
     def test_firmware_keeps_explicit_stack_abi(self):
-        source = (ROOT/'native/game.c').read_text()
+        source = (ROOT/'src/game.c').read_text()
         self.assertIn('#define CALL0 __sdcccall(0)', source)
         declarations = [line for line in source.splitlines() if line.endswith(' CALL0;')]
         self.assertEqual(len(declarations), 5)

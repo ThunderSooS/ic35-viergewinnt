@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <string.h>
-#include "../native/game.c"
+#include "../src/game.c"
 static const char *input;
 static int reads,clears;
 #include "pixel_mock.h"

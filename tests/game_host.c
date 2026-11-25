@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <string.h>
-#include "../native/game.c"
+#include "../src/game.c"
 static const char *input="11q";
 static int reads,clears,polls,poll_after;
 static unsigned short poll_key;

@@ -107,7 +107,7 @@ class Machine:
                 raise AssertionError('Unsupported opcode %02x at %04x' % (op,self.pc-1))
         raise AssertionError('Instruction limit reached')
 
-class NativeTests(unittest.TestCase):
+class BuildTests(unittest.TestCase):
     def setUp(self):
         self.code,self.labels=builder.assemble((ROOT/'test001.asm').read_text())
 

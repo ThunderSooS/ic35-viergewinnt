@@ -1,6 +1,6 @@
 # Vier Gewinnt für den Siemens IC35
 
-Natives Vier Gewinnt für den Siemens IC35 als eigenständige `.APP` – ohne BASIC-Laufzeit.
+Vier Gewinnt für den Siemens IC35 als eigenständige `.APP` – ohne BASIC-Laufzeit.
 Du spielst gegen eine KI mit drei Schwierigkeitsstufen auf einem grafischen Brett.
 
 *English summary below.*
@@ -41,13 +41,13 @@ Alle Tests: `python3 -m unittest discover -s tests -v`
 - `python3 tools/build_test.py` baut die Tastatur-Test-App `TEST001.APP` (Referenz, unverändert).
 - `python3 tools/build_game.py` baut `VIER.APP`; benötigt den Open-Source-Compiler SDCC.
 
-Der GitHub-Workflow „Build native IC35 apps“ erzeugt das Artefakt `IC35-VIER-KI-009-NATIVE-APP`.
+Der GitHub-Workflow „Build IC35 apps“ erzeugt das Artefakt `IC35-VIER-KI-009-APP`.
 Es werden keine proprietären SDK-Binärdateien oder `apilib.obj` verwendet oder hochgeladen.
 
 ## Aufbau
 
-- `native/game.c` – Spiellogik, KI und Steuerung
-- `native/graphics.h` – Monochrom-Renderer mit Teilaktualisierung
+- `src/game.c` – Spiellogik, KI und Steuerung
+- `src/graphics.h` – Monochrom-Renderer mit Teilaktualisierung
 - `tools/` – Packer und Build-Skripte (APP-Aufbau nach der bestätigten TEST001-Basis)
 - `tests/` – Logik-, KI-, Steuerungs- und Pixeltests auf dem PC
 - `docs/` – Notizen zu den Grafikversionen
@@ -60,7 +60,7 @@ Die PC-Tests führen keine IC35-Firmware aus. Ein grüner Build belegt keine Ger
 
 ## English summary
 
-Native Connect Four for the Siemens IC35, built as a standalone `.APP` with no BASIC runtime.
+Connect Four for the Siemens IC35, built as a standalone `.APP` with no BASIC runtime.
 Play against an AI (Easy, Medium, Hard) on a full-screen graphical board. Winning discs are
 highlighted inverted and the direction of the winning line is shown.
 

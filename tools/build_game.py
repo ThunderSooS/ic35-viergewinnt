@@ -93,13 +93,13 @@ def main():
     for name in ['entry','bridge']:
         run('sdasz80','-plosgff','-o',WORK/(name+'.rel'),WORK/(name+'.s'))
     run('sdcc','-mz80','--sdcccall','1','--std-c89','--opt-code-size',
-        '-c',ROOT/'native/game.c','-o',WORK/'game.rel')
-    native_asm=(WORK/'game.asm').read_text()
-    if re.search(r'\bcall\s+__mulint\b',native_asm):
+        '-c',ROOT/'src/game.c','-o',WORK/'game.rel')
+    game_asm=(WORK/'game.asm').read_text()
+    if re.search(r'\bcall\s+__mulint\b',game_asm):
         raise ValueError('Unexpected runtime multiplication')
-    if '_search:' in native_asm or '_evaluate:' in native_asm:
+    if '_search:' in game_asm or '_evaluate:' in game_asm:
         raise ValueError('Old recursive search is still present')
-    if '_gfx_draw:' not in native_asm or not re.search(r'\b(?:call|jp)\s+_gfx_draw\b',native_asm):
+    if '_gfx_draw:' not in game_asm or not re.search(r'\b(?:call|jp)\s+_gfx_draw\b',game_asm):
         raise ValueError('Graphics renderer is not integrated into the target code')
     run('sdcc','-mz80','--sdcccall','1','--no-std-crt0',
         '--code-loc','0x4200','--data-loc','0x8000','-Wl-m',
@@ -117,8 +117,8 @@ def main():
         'version':'VIER KI 009','status':'NOT_DEVICE_VERIFIED',
         'commit':os.environ.get('GITHUB_SHA','local'),
         'bytes':len(app),'sha256':hashlib.sha256(app).hexdigest(),
-        'source_sha256':hashlib.sha256((ROOT/'native/game.c').read_bytes()).hexdigest(),
-        'graphics_sha256':hashlib.sha256((ROOT/'native/graphics.h').read_bytes()).hexdigest(),
+        'source_sha256':hashlib.sha256((ROOT/'src/game.c').read_bytes()).hexdigest(),
+        'graphics_sha256':hashlib.sha256((ROOT/'src/graphics.h').read_bytes()).hexdigest(),
         'linked_bytes':used,'state':'stack-local Game and GfxView; no framebuffer or RAM bank switch',
         'renderer':'graphics.h called from game_main and level menu; dirty cell/arrow/status updates',
         'c_abi':'sdcccall(1); register ABI matching the SDCC runtime',
@@ -130,7 +130,7 @@ def main():
                        'Target speed, font metrics, stack and graphics bridge require device verification.']
     },indent=2)+'\n')
     (OUT/'START.txt').write_text(
-        'VIER KI 009 - EXPERIMENTAL NATIVE GRAPHICS APP\n'
+        'VIER KI 009 - EXPERIMENTAL GRAPHICS APP\n'
         'Keep TEST001.APP, working VIER KI 005 and a backup of organizer/card data.\n'
         'Copy VIER.APP to IC35/APP/VIER.APP; do not replace TEST001.APP.\n'
         'Expected: graphical board, black human stones, AI rings, selection triangle.\n'

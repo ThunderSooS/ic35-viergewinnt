@@ -1,4 +1,4 @@
-name: Build native IC35 apps
+name: Build IC35 apps
 on:
   push:
     branches: [main]
@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 jobs:
-  native-apps:
+  apps:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -18,7 +18,7 @@ jobs:
       - name: Upload baseline test APP
         uses: actions/upload-artifact@v4
         with:
-          name: IC35-TEST-001-NATIVE-APP
+          name: IC35-TEST-001-APP
           path: build/IC35-TEST-001/
           if-no-files-found: error
           retention-days: 30
@@ -26,12 +26,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends sdcc
-      - name: Build native VIER.APP against AI
+      - name: Build VIER.APP against AI
         run: python3 tools/build_game.py
-      - name: Upload native AI game APP and diagnostics
+      - name: Upload game APP and diagnostics
         uses: actions/upload-artifact@v4
         with:
-          name: IC35-VIER-KI-009-NATIVE-APP
+          name: IC35-VIER-KI-009-APP
           path: build/IC35-VIER-KI-009/
           if-no-files-found: error
           retention-days: 30
