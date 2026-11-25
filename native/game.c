@@ -1,4 +1,4 @@
-/* VIER KI 007: integrated monochrome graphics; AI and controls unchanged. */
+/* VIER KI 008: integrated monochrome graphics; AI and controls unchanged. */
 #ifdef __SDCC
 #define CALL0 __sdcccall(0)
 #else
@@ -177,7 +177,7 @@ static int choose_level(Game *g,int level)
         }
         g->cell[r][c]=0;
         if(score>best_score) {best_score=score;best=c;}
-        fw_char((unsigned short)('1'+i),216,128);
+        fw_char((unsigned short)('1'+i),216,122);
     }
     return best;
 }

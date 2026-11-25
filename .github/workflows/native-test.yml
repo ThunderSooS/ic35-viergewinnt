@@ -31,7 +31,7 @@ jobs:
       - name: Upload native AI game APP and diagnostics
         uses: actions/upload-artifact@v4
         with:
-          name: IC35-VIER-KI-007-NATIVE-APP
-          path: build/IC35-VIER-KI-007/
+          name: IC35-VIER-KI-008-NATIVE-APP
+          path: build/IC35-VIER-KI-008/
           if-no-files-found: error
           retention-days: 30

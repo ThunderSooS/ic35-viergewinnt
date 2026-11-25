@@ -8,7 +8,7 @@ from build_test import package
 
 ROOT = Path(__file__).resolve().parents[1]
 WORK = ROOT / 'build' / 'game-work'
-OUT = ROOT / 'build' / 'IC35-VIER-KI-007'
+OUT = ROOT / 'build' / 'IC35-VIER-KI-008'
 SAVE = ['push af','push bc','push de','push hl','push ix','push iy']
 RESTORE = ['pop iy','pop ix','pop hl','pop de','pop bc','pop af','ret']
 
@@ -111,10 +111,10 @@ def main():
     bank,used=read_image((WORK/'game.ihx').read_text())
     if not bank.startswith(bytes.fromhex('f5c5d5e5dde5fde5')):
         raise ValueError('Missing entry register preservation')
-    app=bytearray(package(bank)); app[14:44]=b'VIER KI 007'.ljust(30,b'\0')
+    app=bytearray(package(bank)); app[14:44]=b'VIER KI 008'.ljust(30,b'\0')
     (OUT/'VIER.APP').write_bytes(app)
     (OUT/'BUILD-INFO.json').write_text(json.dumps({
-        'version':'VIER KI 007','status':'NOT_DEVICE_VERIFIED',
+        'version':'VIER KI 008','status':'NOT_DEVICE_VERIFIED',
         'commit':os.environ.get('GITHUB_SHA','local'),
         'bytes':len(app),'sha256':hashlib.sha256(app).hexdigest(),
         'source_sha256':hashlib.sha256((ROOT/'native/game.c').read_bytes()).hexdigest(),
@@ -130,7 +130,7 @@ def main():
                        'Target speed, font metrics, stack and graphics bridge require device verification.']
     },indent=2)+'\n')
     (OUT/'START.txt').write_text(
-        'VIER KI 007 - EXPERIMENTAL NATIVE GRAPHICS APP\n'
+        'VIER KI 008 - EXPERIMENTAL NATIVE GRAPHICS APP\n'
         'Keep TEST001.APP, working VIER KI 005 and a backup of organizer/card data.\n'
         'Copy VIER.APP to IC35/APP/VIER.APP; do not replace TEST001.APP.\n'
         'Expected: graphical board, black human stones, AI rings, selection triangle.\n'
