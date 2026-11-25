@@ -111,7 +111,7 @@ def main():
     bank,used=read_image((WORK/'game.ihx').read_text())
     if not bank.startswith(bytes.fromhex('f5c5d5e5dde5fde5')):
         raise ValueError('Missing entry register preservation')
-    app=bytearray(package(bank)); app[14:44]=b'VIER KI 009'.ljust(30,b'\0')
+    app=bytearray(package(bank)); app[14:44]=b'Vier Gewinnt'.ljust(30,b'\0')
     (OUT/'VIER.APP').write_bytes(app)
     (OUT/'BUILD-INFO.json').write_text(json.dumps({
         'version':'VIER KI 009','status':'NOT_DEVICE_VERIFIED',
