@@ -19,10 +19,10 @@ void fw_fill(unsigned short color,short x,short y,short w,short h)
     for(yy=y;yy<y+h;++yy) for(xx=x;xx<x+w;++xx) pixels[yy][xx]=(unsigned char)color;
 }
 static void same_board(void)
-{int r;for(r=14;r<=134;++r)assert(!memcmp(pixels[r]+8,saved[r]+8,141));}
+{int r;for(r=9;r<=123;++r)assert(!memcmp(pixels[r]+3,saved[r]+3,232));}
 static int pieces(int side,int r,int c)
 {
-    int x,y;x=18+20*c;y=24+20*r;
+    int x,y;x=20+33*c;y=19+19*r;
     if(side==1)return pixels[y][x+3]&&pixels[y][x+6];
     if(side==2)return !pixels[y][x]&&!pixels[y][x+3]&&pixels[y][x+6];
     return pixels[y][x]&&!pixels[y][x+3]&&!pixels[y][x+6];
@@ -33,19 +33,19 @@ int main(void)
     unsigned char dir;int r,c,i,d,dr,dc,a,b,old_fills,old_texts,old_clears;
     unsigned char mask[6];
     memset(&g,0,sizeof(g));before=g;gfx_reset(&v);
-    gfx_draw(&g,"Dein Zug",2,3,&v);
+    gfx_draw(&g,"Dein Zug: schwarz",2,3,&v);
     assert(!memcmp(&g,&before,sizeof(g))&&clears==1);
     for(r=0;r<6;++r)for(c=0;c<7;++c)assert(pieces(0,r,c));
     old_fills=fills;old_texts=texts;
-    gfx_draw(&g,"Dein Zug",2,3,&v);assert(fills==old_fills&&texts==old_texts&&clears==1);
+    gfx_draw(&g,"Dein Zug: schwarz",2,3,&v);assert(fills==old_fills&&texts==old_texts&&clears==1);
     memcpy(saved,pixels,sizeof(saved));
-    for(c=0;c<7;++c) {gfx_draw(&g,"Dein Zug",2,c,&v);same_board();}
+    for(c=0;c<7;++c) {gfx_draw(&g,"Dein Zug: schwarz",2,c,&v);same_board();}
     assert(clears==1);
     old_fills=fills;g.cell[5][2]=1;g.moves=1;
-    gfx_draw(&g,"Dein Zug",2,6,&v);assert(fills-old_fills==19&&pieces(1,5,2));
+    gfx_draw(&g,"Dein Zug: schwarz",2,6,&v);assert(fills-old_fills==19&&pieces(1,5,2));
     old_fills=fills;g.cell[5][3]=2;g.moves=2;
-    gfx_draw(&g,"Dein Zug",2,6,&v);assert(fills-old_fills==29&&pieces(2,5,3));
-    gfx_draw(&g,"KI denkt",2,6,&v);assert(clears==1);
+    gfx_draw(&g,"Dein Zug: schwarz",2,6,&v);assert(fills-old_fills==29&&pieces(2,5,3));
+    gfx_draw(&g,"KI denkt: Ring",2,6,&v);assert(clears==1);
     for(d=0;d<4;++d) {
         dr=0;dc=1;if(d==1){dr=1;dc=0;}if(d==2){dr=1;dc=1;}if(d==3){dr=1;dc=-1;}
         for(r=0;r<6;++r)for(c=0;c<7;++c) {
@@ -56,8 +56,8 @@ int main(void)
                 before=g;gfx_win(&g,mask,&dir);b=0;
                 for(i=0;i<4;++i)assert(mask[r+i*dr]&(1<<(c+i*dc)));
                 for(i=0;i<6;++i){int j;for(j=0;j<7;++j)if(mask[i]&(1<<j))++b;}
-                assert(b==4&&dir==(d==3?3:d));gfx_reset(&v);gfx_draw(&g,"Dein Zug",3,3,&v);
-                for(i=0;i<4;++i)assert(pixels[15+20*(r+i*dr)][9+20*(c+i*dc)]);
+                assert(b==4&&dir==(d==3?3:d));gfx_reset(&v);gfx_draw(&g,"Dein Zug: schwarz",3,3,&v);
+                for(i=0;i<4;++i)assert(pixels[10+19*(r+i*dr)][4+33*(c+i*dc)]);
                 assert(!memcmp(&g,&before,sizeof(g)));
             }
         }

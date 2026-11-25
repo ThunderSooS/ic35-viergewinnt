@@ -10,3 +10,7 @@ Not device verified: font metrics and speed need an IC35 test. Keep VIER KI 005/
 
 VIER KI 008: board enlarged from 18 to 20 px cells (140x120 px), title line removed
 from the game screen, status/result bar moved to the bottom, legend and key hints on the right.
+
+VIER KI 009: full-screen layout. Board 232x115 px (33x19 cells) across the whole width,
+status/result bar and key-hint/level line below, no side panel. Menu widened with
+level descriptions and control instructions.

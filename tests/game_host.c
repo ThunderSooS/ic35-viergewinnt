@@ -111,10 +111,10 @@ int main(void)
     input="1SQ";reads=0;game_main();assert(reads==3);
     input="1435617Q";reads=0;game_main();assert(!strcmp(status,"Du gewinnst"));
     assert(board[5][2]=='X'&&board[5][3]=='X'&&board[5][4]=='X'&&board[5][5]=='X');
-    input="14356NQ";reads=0;game_main();assert(!strcmp(status,"Dein Zug"));
+    input="14356NQ";reads=0;game_main();assert(!strcmp(status,"Dein Zug: schwarz"));
     for(r=0;r<6;++r) for(c=0;c<7;++c) assert(board[r][c]=='.');
     input="24";reads=0;polls=0;poll_after=1;poll_key='Q';game_main();assert(reads==2);
-    input="24Q";reads=0;polls=0;poll_key='N';game_main();assert(!strcmp(status,"Dein Zug"));
+    input="24Q";reads=0;polls=0;poll_key='N';game_main();assert(!strcmp(status,"Dein Zug: schwarz"));
     for(r=0;r<6;++r) for(c=0;c<7;++c) assert(board[r][c]=='.');
     input="241Q";reads=0;polls=0;poll_key='S';game_main();assert(!strcmp(shown_level,"Leicht"));
     return 0;

@@ -1,10 +1,11 @@
 #ifndef IC35_GRAPHICS_H
 #define IC35_GRAPHICS_H
-/* VIER KI 008 renderer. Include after Game and level_name(). */
+/* VIER KI 009 renderer. Include after Game and level_name(). */
 void fw_fill(unsigned short color,short x,short y,short w,short h) CALL0;
-#define GFX_X 8
-#define GFX_Y 14
-#define GFX_CELL 20
+#define GFX_X 3
+#define GFX_Y 9
+#define GFX_CELL 33
+#define GFX_ROW 19
 
 typedef struct {
     unsigned char cells[42],win[6];
@@ -83,13 +84,10 @@ static void gfx_draw(const Game *g,const char *message,int level,int selected,Gf
     const char *shown;
     if(!v->ready) {
         fw_clear();
-        for(c=0;c<=7;++c) fw_fill(1,(short)(GFX_X+GFX_CELL*c),GFX_Y,1,121);
-        for(r=0;r<=6;++r) fw_fill(1,GFX_X,(short)(GFX_Y+GFX_CELL*r),141,1);
-        gfx_box(6,12,145,125,1);
-        fw_text("Stufe",155,14);
-        fw_text("N Neu",155,50);fw_text("S Stufe",155,64);fw_text("Q Ende",155,78);
-        gfx_piece(163,100,1,0);fw_text("Du",179,94);
-        gfx_piece(163,120,2,0);fw_text("KI",179,114);
+        for(c=0;c<=7;++c) fw_fill(1,(short)(GFX_X+GFX_CELL*c),GFX_Y,1,115);
+        for(r=0;r<=6;++r) fw_fill(1,GFX_X,(short)(GFX_Y+GFX_ROW*r),232,1);
+        gfx_box(1,7,236,119,1);
+        fw_text("N Neu S Stufe Q Ende",4,144);
         for(i=0;i<42;++i) v->cells[i]=255;
         for(r=0;r<6;++r) v->win[r]=0;
         v->dir=0;v->selected=255;v->level=0;v->result=255;v->message=0;v->ready=1;
@@ -102,10 +100,10 @@ static void gfx_draw(const Game *g,const char *message,int level,int selected,Gf
         for(c=0;c<7;++c) {
             bit=1<<c;
             if(v->cells[i]!=g->cell[r][c]||((mask[r]^v->win[r])&bit)) {
-                x=GFX_X+GFX_CELL*c;y=GFX_Y+GFX_CELL*r;
-                fw_fill(0,(short)(x+1),(short)(y+1),19,19);
-                if(mask[r]&bit) fw_fill(1,(short)(x+1),(short)(y+1),19,19);
-                gfx_piece(x+10,y+10,g->cell[r][c],(mask[r]&bit)?1:0);
+                x=GFX_X+GFX_CELL*c;y=GFX_Y+GFX_ROW*r;
+                fw_fill(0,(short)(x+1),(short)(y+1),32,18);
+                if(mask[r]&bit) fw_fill(1,(short)(x+1),(short)(y+1),32,18);
+                gfx_piece(x+17,y+10,g->cell[r][c],(mask[r]&bit)?1:0);
                 v->cells[i]=g->cell[r][c];
             }
             ++i;
@@ -113,12 +111,12 @@ static void gfx_draw(const Game *g,const char *message,int level,int selected,Gf
         v->win[r]=mask[r];
     }
     if(v->selected!=selected) {
-        fw_fill(0,GFX_X,4,141,5);x=GFX_X+10+GFX_CELL*selected;
-        for(i=0;i<5;++i) fw_fill(1,(short)(x-4+i),(short)(4+i),(short)(9-i-i),1);
+        fw_fill(0,GFX_X,0,232,5);x=GFX_X+16+GFX_CELL*selected;
+        for(i=0;i<5;++i) fw_fill(1,(short)(x-4+i),(short)i,(short)(9-i-i),1);
         v->selected=(unsigned char)selected;
     }
     if(v->level!=level) {
-        fw_fill(0,155,30,84,16);fw_text(level_name(level),155,30);
+        fw_fill(0,172,144,48,16);fw_text(level_name(level),172,144);
         v->level=(unsigned char)level;
     }
     if(changed||v->message!=message) {
@@ -126,12 +124,12 @@ static void gfx_draw(const Game *g,const char *message,int level,int selected,Gf
         if(g->result==1) shown="Du gewinnst";
         if(g->result==2) shown="KI gewinnt";
         if(g->result==3) shown="Remis";
-        fw_fill(0,0,138,239,22);
-        if(g->result==1||g->result==2) gfx_box(2,139,235,21,1);
-        fw_text(shown,6,142);
+        fw_fill(0,0,126,239,18);
+        if(g->result==1||g->result==2) gfx_box(1,127,236,17,1);
+        fw_text(shown,6,128);
         if(g->result==1||g->result==2)
-            fw_text(v->dir==0?"waagerecht":v->dir==1?"senkrecht":"diagonal",110,142);
-        fw_fill(0,200,122,39,16);
+            fw_text(v->dir==0?"waagerecht":v->dir==1?"senkrecht":"diagonal",110,128);
+        fw_fill(0,220,144,19,16);
         v->message=message;v->result=g->result;
     }
 }
@@ -141,16 +139,20 @@ static void gfx_menu(int selected,int previous)
 {
     int y;
     if(!previous) {
-        fw_clear();fw_text("VIER KI 008",4,4);
-        fw_text("Schwierigkeit",4,28);
-        fw_text("1 Leicht",26,52);fw_text("2 Mittel",26,76);fw_text("3 Schwer",26,100);
-        fw_text("Auf/Ab: Wahl Enter: Start",4,124);fw_text("Q Ende",4,144);
+        fw_clear();fw_text("VIER KI 009",4,4);
+        fw_text("Schwierigkeit",4,24);
+        fw_text("1 Leicht",26,46);fw_text("Einfach",132,46);
+        fw_text("2 Mittel",26,68);fw_text("Taktisch",132,68);
+        fw_text("3 Schwer",26,90);fw_text("Vorausdenkend",132,90);
+        fw_text("Links/Rechts: Spalte",4,112);
+        fw_text("Runter/Enter/Leer: Wurf",4,128);
+        fw_text("Auf/Ab Enter Start Q Ende",4,144);
     } else {
         if(selected==previous) return;
-        y=48+24*(previous-1);gfx_box(8,y,222,22,0);
-        fw_fill(0,12,(short)(y+4),12,16);
+        y=44+22*(previous-1);gfx_box(4,y,232,20,0);
+        fw_fill(0,12,(short)(y+2),12,16);
     }
-    y=48+24*(selected-1);gfx_box(8,y,222,22,1);
-    fw_text(">",14,(short)(y+4));
+    y=44+22*(selected-1);gfx_box(4,y,232,20,1);
+    fw_text(">",14,(short)(y+2));
 }
 #endif

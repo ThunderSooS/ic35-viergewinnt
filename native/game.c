@@ -1,4 +1,4 @@
-/* VIER KI 008: integrated monochrome graphics; AI and controls unchanged. */
+/* VIER KI 009: integrated monochrome graphics; AI and controls unchanged. */
 #ifdef __SDCC
 #define CALL0 __sdcccall(0)
 #else
@@ -177,7 +177,7 @@ static int choose_level(Game *g,int level)
         }
         g->cell[r][c]=0;
         if(score>best_score) {best_score=score;best=c;}
-        fw_char((unsigned short)('1'+i),216,122);
+        fw_char((unsigned short)('1'+i),222,144);
     }
     return best;
 }
@@ -234,7 +234,7 @@ void game_main(void)
     const char *message;
     level=select_level(2);
     if(!level) return;
-    init(&g);gfx_reset(&view);selected=3;message="Dein Zug";
+    init(&g);gfx_reset(&view);selected=3;message="Dein Zug: schwarz";
     for(;;) {
         gfx_draw(&g,message,level,selected,&view);
         key=fw_key();
@@ -242,24 +242,24 @@ void game_main(void)
         if(key=='s'||key=='S') {
             level=select_level(level);
             if(!level) return;
-            init(&g);gfx_reset(&view);selected=3;message="Dein Zug";continue;
+            init(&g);gfx_reset(&view);selected=3;message="Dein Zug: schwarz";continue;
         }
-        if(key=='n'||key=='N') {init(&g);selected=3;message="Dein Zug";continue;}
+        if(key=='n'||key=='N') {init(&g);selected=3;message="Dein Zug: schwarz";continue;}
         if(g.result) continue;
         if(key==KEY_LEFT||key==KEY_RIGHT) {
-            selected=move_selection(selected,key);message="Dein Zug";continue;
+            selected=move_selection(selected,key);message="Dein Zug: schwarz";continue;
         }
         if(key>='1'&&key<='7') selected=(int)(key-'1');
         else if(!drop_key(key)) continue;
         if(drop(&g,selected,1)<0) {message="Spalte voll";continue;}
         if(!g.result) {
-            gfx_draw(&g,"KI denkt",level,selected,&view);
+            gfx_draw(&g,"KI denkt: Ring",level,selected,&view);
             col=choose_level(&g,level);
             if(col==-2) return;
             if(col==-4) {level=select_level(level);if(!level) return;gfx_reset(&view);}
-            if(col==-3||col==-4) {init(&g);selected=3;message="Dein Zug";continue;}
+            if(col==-3||col==-4) {init(&g);selected=3;message="Dein Zug: schwarz";continue;}
             if(col>=0) drop(&g,col,2);
         }
-        message="Dein Zug";
+        message="Dein Zug: schwarz";
     }
 }
